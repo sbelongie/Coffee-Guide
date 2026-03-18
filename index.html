@@ -20,12 +20,12 @@
                 extend: {
                     colors: {
                         coffee: {
-                            50: '#F9F6F0', // Light cream bg
+                            50: '#F9F6F0',
                             100: '#EBE3D5',
-                            200: '#D7CCC8', // Latte
-                            500: '#8D6E63', // Medium brown
-                            800: '#4E342E', // Dark espresso
-                            900: '#3E2723', // Text dark brown
+                            200: '#D7CCC8',
+                            500: '#8D6E63',
+                            800: '#4E342E',
+                            900: '#3E2723',
                         }
                     },
                     fontFamily: {
@@ -38,7 +38,6 @@
     </script>
 
     <style>
-        /* Custom Styles for Chart Container Constraints */
         .chart-container {
             position: relative;
             width: 100%;
@@ -53,40 +52,22 @@
                 height: 350px;
             }
         }
-        
-        /* Hide scrollbar for nav but allow scrolling */
-        .no-scrollbar::-webkit-scrollbar {
-            display: none;
-        }
-        .no-scrollbar {
-            -ms-overflow-style: none;
-            scrollbar-width: none;
-        }
-
-        /* Smooth transitions */
-        .fade-enter {
-            opacity: 0;
-            transform: translateY(10px);
-        }
-        .fade-enter-active {
-            opacity: 1;
-            transform: translateY(0);
-            transition: opacity 300ms, transform 300ms;
-        }
+        .no-scrollbar::-webkit-scrollbar { display: none; }
+        .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+        .fade-enter { opacity: 0; transform: translateY(10px); }
+        .fade-enter-active { opacity: 1; transform: translateY(0); transition: opacity 300ms, transform 300ms; }
     </style>
 
-    <!-- Chosen Palette: Warm Coffee Neutrals (Creams, Lattes, and Espresso Browns) -->
-    <!-- Application Structure Plan: A dashboard-style SPA where the top section serves as an overview and navigation bar. Selecting a brew method acts as a functional filter, dynamically replacing the main content area with the specific stats, toggles (for variations like Moka Pot sizes), and step-by-step instructions for that method. This structure is chosen because users typically come to a coffee guide with a specific tool in mind and need immediate, focused access to that specific recipe without scrolling through unrelated content. -->
+    <!-- Chosen Palette: Warm Coffee Neutrals -->
+    <!-- Application Structure Plan: A centralized dashboard where the Overview provides a time-based comparison of all methods. Individual methods act as dynamic "pages" within the SPA. Toggles are provided for methods with size or orientation variations (Moka Pot/AeroPress) to ensure the UI remains clean and focused. The information architecture prioritizes weights and grinder settings at the top level for quick reference during a brew. -->
     <!-- Visualization & Content Choices: 
-         1. Overview Chart: Bar chart (Chart.js) comparing average total brew time. Goal: Compare. Justification: Helps users pick a method based on how much time they have in the morning.
-         2. Quick Stats: CSS Grid layout. Goal: Inform. Justification: Fast access to crucial numbers (weight, grind, temp).
-         3. Step-by-Step Instructions: Vertical list with integrated image placeholders. Goal: Instruct/Organize. Justification: Linear flow mimics the actual brewing process.
-         4. NO SVG/Mermaid used. HTML/CSS for all UI elements, Unicode for icons. -->
-    <!-- CONFIRMATION: NO SVG graphics used. NO Mermaid JS used. -->
+         - Bar Chart: Compares total brew time across all 5 methods.
+         - Stat Grid: Displays 5 key variables for the selected recipe (Coffee, Water, Grind, Temp, Time).
+         - Instruction List: Dynamically renders steps with image-detection logic.
+         - CONFIRMATION: NO SVG graphics used. NO Mermaid JS used. -->
 </head>
 <body class="bg-coffee-50 text-coffee-900 font-sans antialiased min-h-screen flex flex-col">
 
-    <!-- Header & Navigation -->
     <header class="bg-white shadow-sm sticky top-0 z-50">
         <div class="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8">
             <div class="py-6 border-b border-coffee-100 flex flex-col md:flex-row justify-between items-center gap-4">
@@ -96,258 +77,185 @@
                 </div>
             </div>
             
-            <!-- Method Selector Navigation -->
             <nav class="py-4 overflow-x-auto no-scrollbar">
                 <div class="flex space-x-2 md:justify-center min-w-max" id="nav-buttons">
-                    <!-- Populated by JS -->
+                    <!-- Nav buttons injected by JS -->
                 </div>
             </nav>
         </div>
     </header>
 
-    <!-- Main Content Area -->
     <main class="flex-grow max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 py-8 w-full" id="main-content">
         
-        <!-- Overview Section (Shown by default) -->
+        <!-- Overview Section -->
         <section id="overview-section" class="space-y-8">
             <div class="bg-white rounded-2xl shadow-sm border border-coffee-100 p-6 md:p-8">
-                <h2 class="text-2xl font-serif font-bold mb-4">Welcome to the Guide</h2>
+                <h2 class="text-2xl font-serif font-bold mb-4">Master Your Morning Brew</h2>
                 <p class="text-coffee-800 leading-relaxed mb-4">
-                    This interactive dashboard organizes the renowned coffee brewing techniques popularized by coffee expert James Hoffmann. 
-                    Select a brewing method from the navigation menu above to access precise parameters, including specific settings for the <strong>Baratza Encore</strong> grinder, exact ratios, and step-by-step instructions.
+                    This interactive guide provides precise instructions for five of the most popular home brewing methods. Every recipe is calibrated for the <strong>Baratza Encore</strong> coffee grinder to help you achieve the perfect extraction.
                 </p>
-                <p class="text-coffee-800 leading-relaxed">
-                    Not sure what to brew? Use the chart below to compare the total expected brewing time (including prep and wait times) for each method.
+                <p class="text-coffee-800 leading-relaxed mb-4">
+                    To begin, select a brewing method from the navigation bar above. For methods like the <strong>Moka Pot</strong> or <strong>AeroPress</strong>, you can use the toggles within the recipe to switch between sizes or techniques.
                 </p>
             </div>
 
-            <!-- Chart Container -->
             <div class="bg-white rounded-2xl shadow-sm border border-coffee-100 p-6 md:p-8">
-                <h3 class="text-lg font-bold mb-4">Method Comparison: Total Brew Time</h3>
+                <h3 class="text-lg font-bold mb-4 text-center">Total Time Comparison</h3>
                 <div class="chart-container">
                     <canvas id="timeChart"></canvas>
                 </div>
             </div>
         </section>
 
-        <!-- Dynamic Recipe Section (Hidden initially) -->
+        <!-- Dynamic Recipe Section -->
         <section id="recipe-section" class="hidden space-y-8">
-            <!-- Header & Toggles -->
             <div class="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 bg-white p-6 rounded-2xl shadow-sm border border-coffee-100">
                 <div>
-                    <h2 id="recipe-title" class="text-3xl font-serif font-bold text-coffee-800">Method Title</h2>
-                    <p id="recipe-desc" class="text-coffee-500 mt-2">Description goes here.</p>
+                    <h2 id="recipe-title" class="text-3xl font-serif font-bold text-coffee-800"></h2>
+                    <p id="recipe-desc" class="text-coffee-500 mt-2"></p>
                 </div>
                 <div id="recipe-toggles" class="hidden flex bg-coffee-100 p-1 rounded-lg">
-                    <!-- Toggles populated by JS (e.g. Standard/Inverted) -->
+                    <!-- Variation buttons injected by JS -->
                 </div>
             </div>
 
-            <!-- Quick Stats Grid -->
+            <!-- Recipe Variables Grid -->
             <div class="grid grid-cols-2 md:grid-cols-5 gap-4">
                 <div class="bg-white p-4 rounded-xl shadow-sm border border-coffee-100 flex flex-col items-center justify-center text-center">
                     <span class="text-2xl mb-1">&#9878;</span>
                     <span class="text-xs text-coffee-500 uppercase font-bold tracking-wider">Coffee</span>
-                    <span id="stat-coffee" class="text-lg font-semibold mt-1">-</span>
+                    <span id="stat-coffee" class="text-lg font-semibold mt-1"></span>
                 </div>
                 <div class="bg-white p-4 rounded-xl shadow-sm border border-coffee-100 flex flex-col items-center justify-center text-center">
                     <span class="text-2xl mb-1">&#128167;</span>
                     <span class="text-xs text-coffee-500 uppercase font-bold tracking-wider">Water</span>
-                    <span id="stat-water" class="text-lg font-semibold mt-1">-</span>
+                    <span id="stat-water" class="text-lg font-semibold mt-1"></span>
                 </div>
                 <div class="bg-white p-4 rounded-xl shadow-sm border border-coffee-100 flex flex-col items-center justify-center text-center">
                     <span class="text-2xl mb-1">&#9881;</span>
-                    <span class="text-xs text-coffee-500 uppercase font-bold tracking-wider">Encore Grind</span>
-                    <span id="stat-grind" class="text-lg font-semibold mt-1">-</span>
+                    <span class="text-xs text-coffee-500 uppercase font-bold tracking-wider">Encore Setting</span>
+                    <span id="stat-grind" class="text-lg font-semibold mt-1"></span>
                 </div>
                 <div class="bg-white p-4 rounded-xl shadow-sm border border-coffee-100 flex flex-col items-center justify-center text-center">
                     <span class="text-2xl mb-1">&#127777;</span>
                     <span class="text-xs text-coffee-500 uppercase font-bold tracking-wider">Temp</span>
-                    <span id="stat-temp" class="text-lg font-semibold mt-1">-</span>
+                    <span id="stat-temp" class="text-lg font-semibold mt-1"></span>
                 </div>
                 <div class="bg-white p-4 rounded-xl shadow-sm border border-coffee-100 flex flex-col items-center justify-center text-center col-span-2 md:col-span-1">
                     <span class="text-2xl mb-1">&#9202;</span>
-                    <span class="text-xs text-coffee-500 uppercase font-bold tracking-wider">Time</span>
-                    <span id="stat-time" class="text-lg font-semibold mt-1">-</span>
+                    <span class="text-xs text-coffee-500 uppercase font-bold tracking-wider">Total Time</span>
+                    <span id="stat-time" class="text-lg font-semibold mt-1"></span>
                 </div>
             </div>
 
-            <!-- Step by Step Instructions -->
+            <!-- Instructions Area -->
             <div class="bg-white rounded-2xl shadow-sm border border-coffee-100 p-6 md:p-8">
-                <h3 class="text-xl font-serif font-bold mb-6 border-b border-coffee-100 pb-2">Step-by-Step Instructions</h3>
+                <h3 class="text-xl font-serif font-bold mb-6 border-b border-coffee-100 pb-2">Brewing Instructions</h3>
                 <div id="recipe-steps" class="space-y-8 pl-2 md:pl-4 border-l-2 border-coffee-200 ml-4 md:ml-6 relative">
-                    <!-- Steps populated by JS -->
+                    <!-- Steps injected by JS -->
                 </div>
             </div>
         </section>
         
     </main>
 
-    <footer class="bg-coffee-900 text-coffee-100 py-8 text-center mt-12">
-        <p class="text-sm opacity-80">Designed for educational purposes based on James Hoffmann's methods.</p>
+    <footer class="bg-coffee-900 text-coffee-100 py-12 text-center">
+        <p class="text-sm opacity-60">Educational guide inspired by James Hoffmann's research.</p>
     </footer>
 
-    <!-- JavaScript Application Logic -->
     <script>
-        // --- Data Storage ---
         const brewData = {
             v60: {
-                id: 'v60',
-                name: 'V60',
-                desc: 'The ultimate 1-cup V60 technique for a clean, sweet, and perfectly extracted cup.',
-                timeMinutes: 3.5, // For chart
+                id: 'v60', name: 'V60', desc: 'The classic pour-over technique for balanced extraction.', timeMinutes: 3.5,
                 variations: {
                     default: {
-                        label: 'Standard (1 Cup)',
-                        coffee: '15g',
-                        water: '250g',
-                        grind: 'Medium-Fine (12-15)',
-                        temp: '100°C (Boiling)',
-                        time: '3:00 - 3:30',
+                        label: '1 Cup', coffee: '15g', water: '250g', grind: '12-15 (Fine-Medium)', temp: '100°C', time: '3:30',
                         steps: [
-                            { title: 'Prep', text: 'Fold the filter paper, place it in the V60, and rinse thoroughly with boiling water. Discard the rinse water.', photo: 'Rinsing paper filter with kettle' },
-                            { title: 'Add Coffee', text: 'Add 15g of ground coffee. Create a small well or crater in the middle of the grounds to help water saturate evenly.', photo: 'Coffee grounds in V60 with a small well in center' },
-                            { title: 'The Bloom', text: 'Start timer. Pour 30g of water (2x the coffee weight). Immediately pick up the V60 and swirl it vigorously to ensure all grounds are wet. Wait until the timer hits 0:45.', photo: 'Swirling the V60 slurry during bloom' },
-                            { title: 'First Pour (to 60%)', text: 'At 0:45, pour water in circles up to 150g. Try to finish this pour by 1:15.', photo: 'Pouring water in a circular motion' },
-                            { title: 'Second Pour (to 100%)', text: 'At 1:15, pour slower up to the final 250g weight. Try to finish pouring by 1:45.', photo: 'Slow, steady central pour' },
-                            { title: 'The Swirl', text: 'Take a spoon and give the slurry one stir clockwise, and one counter-clockwise to knock grounds off the wall. Give the V60 a final gentle swirl to level the bed. Let it drain.', photo: 'Flat coffee bed after draining' }
+                            { title: 'Rinse Filter', text: 'Place paper in V60 and rinse with boiling water. Discard water.', photo: 'placeholder: Rinsing the V60 filter' },
+                            { title: 'The Bloom', text: 'Add coffee. Start timer. Pour 30g water and swirl. Wait until 0:45.', photo: 'placeholder: Swirling the bloom' },
+                            { title: 'First Pour', text: 'At 0:45, pour to 150g total weight. Finish by 1:15.', photo: 'placeholder: Circular pouring' },
+                            { title: 'Second Pour', text: 'At 1:15, pour to 250g total weight. Finish by 1:45.', photo: 'placeholder: Completing the pour' },
+                            { title: 'Final Spin', text: 'Give the V60 a gentle swirl to level the bed. Let drain.', photo: 'placeholder: Flat coffee bed' }
                         ]
                     }
                 }
             },
             aeropress: {
-                id: 'aeropress',
-                name: 'Aeropress',
-                desc: 'A versatile brewer. Choose between the standard, straightforward method or the inverted method for more control over steep time.',
-                timeMinutes: 2.5,
+                id: 'aeropress', name: 'AeroPress', desc: 'Choose between the vacuum-seal standard or the immersion inverted method.', timeMinutes: 2.5,
                 variations: {
                     standard: {
-                        label: 'Standard',
-                        coffee: '11g',
-                        water: '200g',
-                        grind: 'Fine (10-12)',
-                        temp: '100°C (Boiling)',
-                        time: '2:30',
+                        label: 'Standard', coffee: '11g', water: '200g', grind: '10-12 (Fine)', temp: '100°C', time: '2:30',
                         steps: [
-                            { title: 'Prep', text: 'Insert a paper filter into the cap and rinse it. Attach cap to the Aeropress and place on your mug. Add 11g of coffee.', photo: 'Aeropress sitting on a mug with coffee inside' },
-                            { title: 'Pour', text: 'Start timer. Pour 200g of water quickly, ensuring all coffee is saturated.', photo: 'Pouring water quickly into Aeropress' },
-                            { title: 'Vacuum Seal', text: 'Insert the plunger just slightly at an angle, then pull up a fraction of an inch to create a vacuum seal. This stops water from dripping through. Wait exactly 2 minutes.', photo: 'Plunger resting slightly inside the chamber' },
-                            { title: 'Swirl', text: 'At 2:00, hold the mug and Aeropress together and give it a gentle swirl to break the crust. Wait 30 seconds for grounds to settle.', photo: 'Gently swirling the entire assembly' },
-                            { title: 'Press', text: 'At 2:30, press gently all the way down. Stop when you hear the hiss.', photo: 'Pressing the plunger down gently' }
+                            { title: 'Add Coffee', text: 'Place filter in cap, rinse, and attach. Add coffee to Aeropress on mug.', photo: 'placeholder: Setting up standard Aeropress' },
+                            { title: 'Pour & Seal', text: 'Pour 200g water. Insert plunger slightly to create a vacuum seal. Wait 2:00.', photo: 'placeholder: Plunger inserted for seal' },
+                            { title: 'Swirl & Press', text: 'At 2:00, swirl gently. Wait 30s for grounds to settle. Press gently.', photo: 'placeholder: Pressing into mug' }
                         ]
                     },
                     inverted: {
-                        label: 'Inverted',
-                        coffee: '11g',
-                        water: '200g',
-                        grind: 'Fine (10-12)',
-                        temp: '100°C (Boiling)',
-                        time: '2:30',
+                        label: 'Inverted', coffee: '11g', water: '200g', grind: '10-12 (Fine)', temp: '100°C', time: '2:30',
                         steps: [
-                            { title: 'Prep', text: 'Push the plunger into the chamber slightly. Stand it on the plunger (inverted). Add 11g of coffee into the chamber.', photo: 'Aeropress standing upside down on plunger' },
-                            { title: 'Pour & Stir', text: 'Start timer. Pour 200g of water. Give it a gentle stir to make sure all grounds are wet. Wait 2 minutes.', photo: 'Stirring the inverted Aeropress' },
-                            { title: 'Cap & Flip', text: 'Rinse a paper filter and put it in the cap. Screw the cap tightly onto the chamber. At 2:00, place your mug upside down on top of the cap, grab both firmly, and flip them over.', photo: 'Flipping the Aeropress and mug assembly' },
-                            { title: 'Settle & Press', text: 'Wait 30 seconds for grounds to settle to the bottom. Press gently all the way down. Stop when you hear the hiss.', photo: 'Pressing the plunger down gently' }
+                            { title: 'Setup Inverted', text: 'Stand Aeropress on plunger. Add coffee.', photo: 'placeholder: Inverted setup' },
+                            { title: 'Steep', text: 'Add 200g water. Stir gently. Wait 2:00.', photo: 'placeholder: Stirring immersion' },
+                            { title: 'Flip & Press', text: 'Cap, flip onto mug at 2:00. Wait 30s for settling. Press.', photo: 'placeholder: Flipping the Aeropress' }
                         ]
                     }
                 }
             },
             frenchPress: {
-                id: 'frenchPress',
-                name: 'French Press',
-                desc: 'The ultimate technique for a grit-free, incredibly flavorful French Press.',
-                timeMinutes: 9,
+                id: 'frenchPress', name: 'French Press', desc: 'The "Ultimate" technique for a clean, silt-free immersion brew.', timeMinutes: 9,
                 variations: {
                     default: {
-                        label: 'Standard',
-                        coffee: '30g',
-                        water: '500g',
-                        grind: 'Medium (18-20)', /* Note: Hoffmann uses medium, not coarse! */
-                        temp: '100°C (Boiling)',
-                        time: '9:00+',
+                        label: 'Standard', coffee: '30g', water: '500g', grind: '18-20 (Medium)', temp: '100°C', time: '9:00+',
                         steps: [
-                            { title: 'Add Coffee & Water', text: 'Add 30g of medium-ground coffee. Pour 500g of boiling water immediately. Make sure all grounds are saturated.', photo: 'Pouring water over coffee in French Press' },
-                            { title: 'The Long Steep', text: 'Do NOT touch it. Let it sit for exactly 4 minutes.', photo: 'French press sitting untouched, crust forming at top' },
-                            { title: 'Break the Crust', text: 'At 4:00, take a spoon and give the crust at the top a gentle stir. The grounds will fall to the bottom.', photo: 'Stirring the crust with a spoon' },
-                            { title: 'Scoop the Foam', text: 'Using two spoons, scoop the remaining foam and floating bits off the top and discard them. This removes bitterness.', photo: 'Scooping foam off the top of the coffee' },
-                            { title: 'The Second Wait', text: 'Wait at least 5 more minutes (up to 8 minutes). The coffee is too hot to drink anyway, and this lets microscopic particles settle.', photo: 'French press sitting undisturbed' },
-                            { title: 'Pour (Don\'t Plunge!)', text: 'Insert the plunger, but DO NOT press it down into the coffee. Just rest it on the surface to act as a strainer. Pour gently into your mug.', photo: 'Pouring gently with plunger resting on top' }
+                            { title: 'Steep', text: 'Add coffee and 500g water. Let sit untouched for 4:00.', photo: 'placeholder: Initial steep' },
+                            { title: 'Break & Scoop', text: 'At 4:00, stir crust gently. Scoop off the floating foam/bits.', photo: 'placeholder: Scooping the foam' },
+                            { title: 'The Long Wait', text: 'Wait at least 5 more minutes (up to 8) for fine sediment to settle.', photo: 'placeholder: Settling phase' },
+                            { title: 'Pour (Don\'t Plunge)', text: 'Place plunger on surface to act as strainer. Pour gently into mug.', photo: 'placeholder: Pouring without plunging' }
                         ]
                     }
                 }
             },
             chemex: {
-                id: 'chemex',
-                name: 'Chemex',
-                desc: 'A technique tailored for the thick Chemex filters, producing a remarkably clean cup.',
-                timeMinutes: 4.5,
+                id: 'chemex', name: 'Chemex', desc: 'Thick filters create a cleaner, lighter body compared to V60.', timeMinutes: 4.5,
                 variations: {
                     default: {
-                        label: 'Standard (3 Cups)',
-                        coffee: '30g',
-                        water: '500g',
-                        grind: 'Medium-Coarse (20-22)',
-                        temp: '100°C (Boiling)',
-                        time: '4:00 - 4:30',
+                        label: 'Standard', coffee: '30g', water: '500g', grind: '20-22 (Medium-Coarse)', temp: '100°C', time: '4:30',
                         steps: [
-                            { title: 'Prep', text: 'Place filter with the 3-layer side facing the spout. Rinse very heavily with hot water to remove papery taste and pre-heat the glass. Discard water.', photo: 'Rinsing thick Chemex filter' },
-                            { title: 'Add Coffee', text: 'Add 30g of coffee. Give it a gentle shake to level the bed.', photo: 'Level coffee bed in Chemex' },
-                            { title: 'The Bloom', text: 'Start timer. Pour 60g of water (2x weight). Pick up the Chemex and swirl it to mix thoroughly. Wait until timer hits 0:45.', photo: 'Swirling the large Chemex base' },
-                            { title: 'First Pour', text: 'Pour in circles up to 300g (60% of total water). Aim to finish pouring by 1:30.', photo: 'Circular pour avoiding the extreme edges' },
-                            { title: 'Second Pour', text: 'Let it drain slightly, then at 2:00, pour slowly up to 500g. Finish pouring by 2:30.', photo: 'Topping off the Chemex slowly' },
-                            { title: 'Final Swirl', text: 'Give the Chemex one final, gentle swirl to level the bed and clear the sides. Allow it to drain completely.', photo: 'Flat coffee bed after drawing down' }
+                            { title: 'Rinse Heavily', text: 'Rinse the thick filter with lots of hot water to remove paper taste.', photo: 'placeholder: Rinsing Chemex filter' },
+                            { title: 'Bloom', text: 'Add coffee. Pour 60g water and swirl. Wait 45s.', photo: 'placeholder: Chemex bloom' },
+                            { title: 'Phase One', text: 'Pour up to 300g by 1:30 in circular motions.', photo: 'placeholder: Main pour' },
+                            { title: 'Phase Two', text: 'Let drain slightly, then pour up to 500g by 2:30.', photo: 'placeholder: Finishing pour' },
+                            { title: 'Final Drawdown', text: 'Swirl once to level bed. Let it drain completely.', photo: 'placeholder: Drawdown phase' }
                         ]
                     }
                 }
             },
             mokaPot: {
-                id: 'mokaPot',
-                name: 'Moka Pot',
-                desc: 'How to get modern, sweet, non-bitter espresso-like coffee from a classic stovetop Moka Pot.',
-                timeMinutes: 5,
+                id: 'mokaPot', name: 'Moka Pot', desc: 'Stovetop espresso-style coffee without the bitterness.', timeMinutes: 5,
                 variations: {
                     cup3: {
-                        label: '3-Cup Size',
-                        coffee: '~15g',
-                        water: '~150g',
-                        grind: 'Fine (8-10)',
-                        temp: 'Pre-Boiled Water',
-                        time: '~5:00',
+                        label: '3-Cup', coffee: '15g', water: '150g', grind: '8-10 (Fine)', temp: 'Boiled', time: '5:00',
                         steps: [
-                            { title: 'Boil Water', text: 'Boil water in a separate kettle. Starting with hot water prevents the coffee grounds from "baking" on the stove while the water heats up.', photo: 'Kettle boiling separately' },
-                            { title: 'Fill Base', text: 'Pour the boiling hot water into the base of the Moka Pot up to just below the safety valve (approx 150g).', photo: 'Pouring hot water into Moka Pot base' },
-                            { title: 'Fill Basket', text: 'Fill the basket with ~15g of finely ground coffee. Tap it to level it out, but DO NOT tamp or press it down.', photo: 'Leveling coffee in the metal basket' },
-                            { title: 'Assemble (Careful!)', text: 'Drop the basket into the base. Using an oven mitt or towel (the base is boiling hot!), screw the top section on tightly.', photo: 'Screwing top on using a towel' },
-                            { title: 'Heat', text: 'Place on the stove over medium-low heat. Leave the lid open so you can watch.', photo: 'Moka pot on stove with lid open' },
-                            { title: 'The Brew & Stop', text: 'Coffee will slowly ooze out. As soon as it starts to spurt, sputter, or become pale/blonde, immediately remove from heat and run the base under cold tap water to stop the brewing process entirely.', photo: 'Running Moka Pot base under cold tap water' }
+                            { title: 'Pre-Boil', text: 'Boil water separately. Add 150g boiling water to the base.', photo: 'placeholder: Boiling water' },
+                            { title: 'Assemble', text: 'Fill basket with 15g coffee. Level but do not tamp. Screw top on using a towel.', photo: 'placeholder: Screwing top on hot base' },
+                            { title: 'Brew', text: 'Heat on medium. Leave lid open. Watch for the coffee stream.', photo: 'placeholder: Coffee emerging' },
+                            { title: 'Stop', text: 'When it splutters, remove and run the base under cold water immediately.', photo: 'placeholder: Cooling the base' }
                         ]
                     },
                     cup6: {
-                        label: '6-Cup Size',
-                        coffee: '~25-30g',
-                        water: '~300g',
-                        grind: 'Fine (8-10)',
-                        temp: 'Pre-Boiled Water',
-                        time: '~6:00',
+                        label: '6-Cup', coffee: '30g', water: '300g', grind: '8-10 (Fine)', temp: 'Boiled', time: '6:00',
                         steps: [
-                            { title: 'Boil Water', text: 'Boil water in a separate kettle. Starting with hot water prevents the coffee grounds from "baking" on the stove.', photo: 'Kettle boiling separately' },
-                            { title: 'Fill Base', text: 'Pour the boiling hot water into the base of the Moka Pot up to just below the safety valve (approx 300g).', photo: 'Pouring hot water into Moka Pot base' },
-                            { title: 'Fill Basket', text: 'Fill the basket with ~25-30g of finely ground coffee. Tap it to level it out, but DO NOT tamp or press it down.', photo: 'Leveling coffee in the metal basket' },
-                            { title: 'Assemble (Careful!)', text: 'Drop the basket into the base. Using an oven mitt or towel, screw the top section on tightly.', photo: 'Screwing top on using a towel' },
-                            { title: 'Heat', text: 'Place on the stove over medium-low heat. Leave the lid open.', photo: 'Moka pot on stove with lid open' },
-                            { title: 'The Brew & Stop', text: 'Coffee will slowly ooze out. As soon as it starts to spurt or become pale, immediately remove from heat and run the base under cold tap water to stop extraction and prevent bitterness.', photo: 'Running Moka Pot base under cold tap water' }
+                            { title: 'Pre-Boil', text: 'Boil water separately. Add 300g boiling water to the base.', photo: 'placeholder: Boiling water' },
+                            { title: 'Assemble', text: 'Fill basket with 30g coffee. Level but do not tamp. Screw top on using a towel.', photo: 'placeholder: Screwing top on hot base' },
+                            { title: 'Brew', text: 'Heat on medium. Leave lid open.', photo: 'placeholder: 6-cup brewing' },
+                            { title: 'Stop', text: 'Run base under cold water as soon as it begins to splutter.', photo: 'placeholder: Cooling the base' }
                         ]
                     }
                 }
             }
         };
 
-        // --- State Management ---
-        let currentMethod = null;
-        let currentVariationKey = null;
-        let chartInstance = null;
-
-        // --- DOM Elements ---
+        let currentMethod = null, currentVariationKey = null, chartInstance = null;
         const els = {
             nav: document.getElementById('nav-buttons'),
             overview: document.getElementById('overview-section'),
@@ -363,185 +271,93 @@
             steps: document.getElementById('recipe-steps')
         };
 
-        // --- Initialization ---
-        function init() {
-            renderNav();
-            renderChart();
-        }
+        function init() { renderNav(); renderChart(); }
 
-        // --- Render Functions ---
         function renderNav() {
-            els.nav.innerHTML = '';
-            
-            // Add 'Overview' button
-            const overviewBtn = document.createElement('button');
-            overviewBtn.className = `px-5 py-2 rounded-full font-medium transition-colors border ${!currentMethod ? 'bg-coffee-800 text-white border-coffee-800' : 'bg-white text-coffee-800 border-coffee-200 hover:bg-coffee-100'}`;
-            overviewBtn.innerText = 'Overview';
-            overviewBtn.onclick = () => showOverview();
-            els.nav.appendChild(overviewBtn);
-
-            // Add Method buttons
-            Object.values(brewData).forEach(method => {
-                const btn = document.createElement('button');
-                const isSelected = currentMethod && currentMethod.id === method.id;
-                btn.className = `px-5 py-2 rounded-full font-medium transition-colors border ${isSelected ? 'bg-coffee-800 text-white border-coffee-800' : 'bg-white text-coffee-800 border-coffee-200 hover:bg-coffee-100'}`;
-                btn.innerText = method.name;
-                btn.onclick = () => loadMethod(method.id);
-                els.nav.appendChild(btn);
+            els.nav.innerHTML = `<button onclick="showOverview()" class="px-5 py-2 rounded-full font-medium transition-colors border ${!currentMethod ? 'bg-coffee-800 text-white border-coffee-800' : 'bg-white text-coffee-800 border-coffee-200 hover:bg-coffee-100'}">Overview</button>`;
+            Object.values(brewData).forEach(m => {
+                const isSel = currentMethod && currentMethod.id === m.id;
+                els.nav.innerHTML += `<button onclick="loadMethod('${m.id}')" class="px-5 py-2 rounded-full font-medium transition-colors border ${isSel ? 'bg-coffee-800 text-white border-coffee-800' : 'bg-white text-coffee-800 border-coffee-200 hover:bg-coffee-100'}">${m.name}</button>`;
             });
         }
 
-        function showOverview() {
-            currentMethod = null;
-            renderNav();
-            
-            els.recipe.classList.add('hidden');
-            els.overview.classList.remove('hidden');
-            els.overview.classList.add('fade-enter', 'fade-enter-active');
-            setTimeout(() => els.overview.classList.remove('fade-enter', 'fade-enter-active'), 300);
+        function showOverview() { currentMethod = null; renderNav(); els.recipe.classList.add('hidden'); els.overview.classList.remove('hidden'); }
+        
+        function loadMethod(id) { 
+            currentMethod = brewData[id]; 
+            currentVariationKey = Object.keys(currentMethod.variations)[0]; 
+            renderNav(); 
+            updateUI(); 
+            els.overview.classList.add('hidden'); 
+            els.recipe.classList.remove('hidden'); 
         }
 
-        function loadMethod(methodId) {
-            currentMethod = brewData[methodId];
-            
-            // Set default variation (first key)
-            currentVariationKey = Object.keys(currentMethod.variations)[0];
-            
-            renderNav();
-            updateRecipeUI();
+        window.switchVariation = function(k) { currentVariationKey = k; updateUI(); }
 
-            els.overview.classList.add('hidden');
-            els.recipe.classList.remove('hidden');
-            els.recipe.classList.add('fade-enter', 'fade-enter-active');
-            setTimeout(() => els.recipe.classList.remove('fade-enter', 'fade-enter-active'), 300);
-        }
-
-        function updateRecipeUI() {
-            if (!currentMethod || !currentVariationKey) return;
-
-            const variation = currentMethod.variations[currentVariationKey];
-
-            // Header info
+        function updateUI() {
+            const v = currentMethod.variations[currentVariationKey];
             els.title.innerText = currentMethod.name;
             els.desc.innerText = currentMethod.desc;
+            els.statCoffee.innerText = v.coffee;
+            els.statWater.innerText = v.water;
+            els.statGrind.innerText = v.grind;
+            els.statTemp.innerText = v.temp;
+            els.statTime.innerText = v.time;
 
-            // Render Toggles if multiple variations exist
             const varKeys = Object.keys(currentMethod.variations);
-            if (varKeys.length > 1) {
-                els.toggles.classList.remove('hidden');
-                els.toggles.innerHTML = varKeys.map(key => {
-                    const isActive = key === currentVariationKey;
-                    return `<button onclick="switchVariation('${key}')" class="px-4 py-1.5 text-sm font-medium rounded-md transition-colors ${isActive ? 'bg-white shadow text-coffee-900' : 'text-coffee-500 hover:text-coffee-800'}">${currentMethod.variations[key].label}</button>`;
-                }).join('');
-            } else {
-                els.toggles.classList.add('hidden');
-                els.toggles.innerHTML = '';
-            }
+            els.toggles.classList.toggle('hidden', varKeys.length <= 1);
+            els.toggles.innerHTML = varKeys.map(k => `<button onclick="switchVariation('${k}')" class="px-4 py-1.5 text-sm font-medium rounded-md transition-all ${k===currentVariationKey?'bg-white shadow text-coffee-900':'text-coffee-500 hover:text-coffee-800'}">${currentMethod.variations[k].label}</button>`).join('');
 
-            // Stats
-            els.statCoffee.innerText = variation.coffee;
-            els.statWater.innerText = variation.water;
-            els.statGrind.innerText = variation.grind;
-            els.statTemp.innerText = variation.temp;
-            els.statTime.innerText = variation.time;
+            els.steps.innerHTML = v.steps.map((s, i) => {
+                const isUrl = s.photo.startsWith('http') || s.photo.includes('.');
+                const photoHtml = isUrl 
+                    ? `<img src="${s.photo}" class="w-full h-full object-cover" onerror="this.parentElement.innerHTML='<div class=\'p-4 text-xs\'>Failed to load: ${s.photo}</div>'">`
+                    : `<div class="flex flex-col items-center justify-center h-full text-coffee-400 opacity-60"><span class="text-3xl mb-1">&#128247;</span><span class="text-xs font-mono text-center px-4 uppercase tracking-tighter">${s.photo.replace('placeholder: ', '')}</span></div>`;
 
-            // Steps
-            els.steps.innerHTML = variation.steps.map((step, index) => `
-                <div class="relative pl-6 sm:pl-8 pb-8 fade-enter fade-enter-active" style="animation-delay: ${index * 50}ms">
-                    <!-- Timeline Dot -->
-                    <div class="absolute left-[-9px] md:left-[-9px] top-1 w-4 h-4 rounded-full bg-coffee-500 border-4 border-white shadow"></div>
-                    
-                    <div class="bg-coffee-50 rounded-xl p-5 border border-coffee-100 hover:border-coffee-200 transition-colors">
+                return `
+                <div class="relative pl-6 sm:pl-8 pb-8 fade-enter fade-enter-active">
+                    <div class="absolute left-[-9px] top-1 w-4 h-4 rounded-full bg-coffee-500 border-4 border-white shadow"></div>
+                    <div class="bg-coffee-50 rounded-xl p-5 border border-coffee-100 group hover:border-coffee-300 transition-colors">
                         <div class="flex items-center gap-3 mb-3">
-                            <span class="flex items-center justify-center w-6 h-6 rounded-full bg-coffee-800 text-white text-xs font-bold">${index + 1}</span>
-                            <h4 class="text-lg font-bold text-coffee-800">${step.title}</h4>
+                            <span class="flex items-center justify-center w-6 h-6 rounded-full bg-coffee-800 text-white text-xs font-bold">${i+1}</span>
+                            <h4 class="text-lg font-bold text-coffee-800">${s.title}</h4>
                         </div>
-                        <p class="text-coffee-900 leading-relaxed mb-4">${step.text}</p>
-                        
-                        <!-- Photo Placeholder -->
-                        <div class="w-full aspect-video bg-coffee-200 rounded-lg flex flex-col items-center justify-center border border-coffee-100 text-coffee-500 overflow-hidden relative">
-                            <span class="text-3xl mb-2">&#128247;</span>
-                            <span class="text-sm font-mono text-center px-4">[Photo Placeholder: ${step.photo}]</span>
+                        <p class="text-coffee-900 leading-relaxed mb-4">${s.text}</p>
+                        <div class="w-full aspect-video bg-coffee-200 rounded-lg border border-coffee-100 overflow-hidden shadow-inner">
+                            ${photoHtml}
                         </div>
                     </div>
-                </div>
-            `).join('');
-        }
-
-        // Exposed to global scope for inline onclick handlers
-        window.switchVariation = function(key) {
-            currentVariationKey = key;
-            updateRecipeUI();
+                </div>`;
+            }).join('');
         }
 
         function renderChart() {
             const ctx = document.getElementById('timeChart').getContext('2d');
-            
-            const labels = Object.values(brewData).map(m => m.name);
-            const data = Object.values(brewData).map(m => m.timeMinutes);
-
-            if (chartInstance) {
-                chartInstance.destroy();
-            }
-
-            // Global Defaults
-            Chart.defaults.font.family = 'Inter, sans-serif';
-            Chart.defaults.color = '#8D6E63';
-
-            chartInstance = new Chart(ctx, {
+            const dataValues = Object.values(brewData);
+            new Chart(ctx, {
                 type: 'bar',
                 data: {
-                    labels: labels,
+                    labels: dataValues.map(m => m.name),
                     datasets: [{
-                        label: 'Total Time (Minutes)',
-                        data: data,
+                        label: 'Minutes',
+                        data: dataValues.map(m => m.timeMinutes),
                         backgroundColor: '#8D6E63',
                         hoverBackgroundColor: '#4E342E',
-                        borderRadius: 6,
-                        borderSkipped: false,
+                        borderRadius: 8
                     }]
                 },
                 options: {
                     responsive: true,
                     maintainAspectRatio: false,
-                    plugins: {
-                        legend: { display: false },
-                        tooltip: {
-                            backgroundColor: '#3E2723',
-                            titleFont: { size: 14, family: 'Inter' },
-                            bodyFont: { size: 13, family: 'Inter' },
-                            padding: 10,
-                            displayColors: false,
-                            callbacks: {
-                                label: function(context) {
-                                    return context.parsed.y + ' Minutes';
-                                }
-                            }
-                        }
-                    },
-                    scales: {
-                        y: {
-                            beginAtZero: true,
-                            grid: {
-                                color: '#EBE3D5',
-                                drawBorder: false,
-                            },
-                            title: {
-                                display: true,
-                                text: 'Minutes'
-                            }
-                        },
-                        x: {
-                            grid: { display: false, drawBorder: false }
-                        }
+                    plugins: { legend: { display: false } },
+                    scales: { 
+                        y: { beginAtZero: true, grid: { color: '#EBE3D5' } },
+                        x: { grid: { display: false } }
                     }
                 }
             });
         }
-
-        // Start app
-        document.addEventListener('DOMContentLoaded', init);
-
+        init();
     </script>
 </body>
 </html>
